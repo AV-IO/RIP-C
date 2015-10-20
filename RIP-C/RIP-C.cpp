@@ -4,6 +4,8 @@
 #include <locale>
 #include <codecvt>
 
+
+
 bool is_c_extension(std::string s) {
 	for (unsigned long i = s.length() - 2; i > s.length() - 4; --i) {
 		if (s[i] == '.' && (s[i + 1] == 'c' || s[i + 1] == 'h')) {
@@ -17,8 +19,8 @@ bool is_c_extension(std::string s) {
 
 int main() {
 	std::experimental::filesystem::file_status fStatus;
-	std::ifstream i_file;
-	std::wofstream o_file;
+	std::ifstream i_file; //original file
+	std::wofstream o_file; // created file
 	for (auto& rdi : std::experimental::filesystem::recursive_directory_iterator(std::experimental::filesystem::current_path())) {
 		std::experimental::filesystem::path pth = rdi;
 		fStatus = std::experimental::filesystem::status(pth);
@@ -41,6 +43,7 @@ int main() {
 			}
 			i_file.close();
 			o_file.close();
+			std::experimental::filesystem::remove(pth.string() + "1");
 		}
 	}
 	return 0;

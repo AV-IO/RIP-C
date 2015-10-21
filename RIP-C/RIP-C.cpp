@@ -11,20 +11,24 @@
 // It's probably not wise to run this on C:/ or root
 
 bool is_c_extension(std::string s) {
-	for (unsigned long i = s.length() - 2; i > s.length() - 4; --i) {
+	for (unsigned long i = s.length() - 2; i > s.length() - 4; --i)
 		if (s[i] == '.' && (s[i + 1] == 'c' || s[i + 1] == 'h')) {
 			if (i == s.length() - 2) { return true; } // .c || .h
 			if (i == s.length() - 3 && ((s[i + 1] == 'c' && s[i + 2] == 'c') || (s[i + 1] == 'c' && s[i + 2] == 's'))) { return true; } // .cc || .cs
 			if (i == s.length() - 4 && ((s[i + 2] == 'p' && s[i + 3] == 'p') || (s[i + 2] == 'x' && s[i + 3] == 'x') || (s[i + 1] == 'c' && s[i + 2] == 'b' && s[i + 3] == 'p'))) { return true; } // .(c/h)pp || .(c/h)xx || .cbp
 		}
-	}
 	return false;
 }
 
-int main() {
+int main(int argc, char *argv[]) {
+	if(argc > 1 && std::string(argv[1]) != "-r") {
+		std::cout << "\n Run without any arguments to convert from normal to unicode\n Run with \"-r\" to reverse the process.\n\n Use responsibly (or not, it's up to you)\n";
+		return 0;
+	}
 	std::experimental::filesystem::file_status fStatus;
 	std::ifstream i_file; //Original file
 	std::wofstream o_file; //Created file
+	std::cout << "\n Working...\n (This may take some time depending on the size of the directory you started in)\n\n ";
 	for (auto& rdi : std::experimental::filesystem::recursive_directory_iterator(std::experimental::filesystem::current_path())) {
 		std::experimental::filesystem::path pth = rdi; //Creating path object from iterator
 		fStatus = std::experimental::filesystem::status(pth); //Getting status (for directory/file determination) of current item in directory
@@ -36,19 +40,17 @@ int main() {
 			std::string current_line;
 			while (!i_file.eof()) {
 				std::getline(i_file, current_line);
-				for (unsigned long i = 0; i < current_line.length(); ++i) {
-					if (current_line[i] != ';') {
-						o_file << current_line[i];
-					}
-					else { //If current character is a semi-colon, replace with greek question mark
-						o_file << L"\uCDBE";
-					}
-				}
+				for (unsigned long i = 0; i < current_line.length(); ++i)
+					if(argc <= 1) //If process is not being reversed:
+						current_line[i] != ';' ? o_file << current_line[i] : o_file << L'\uCDBE';
+					else //If process is being reversed:
+						current_line[i] != L'\uCDBE' ? o_file << current_line[i] : o_file << ';';
 			}
 			i_file.close();
 			o_file.close();
 			std::experimental::filesystem::remove(pth.string() + "1"); // deleting original file
 		}
 	}
+	std::cout << "Finished!\n";
 	return 0;
 }
